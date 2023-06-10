@@ -2,5 +2,8 @@
   "dependencies": {
     "easymidi": "^3.0.1",
     "osc": "^2.4.4"
+  },
+  "devDependencies": {
+    "eslint": "^8.42.0"
   }
 }
