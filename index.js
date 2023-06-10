@@ -15,8 +15,9 @@ if (midiInDevice.length === 0 && midiOutDevice.length === 0) {
     console.log('midi inputs: ', midi.getInputs());
     console.log('midi outputs:', midi.getOutputs());
     console.error('APC mini MK2 not found');
-    return;
+    process.exit();
 }
+
 
 const apc = {
     name: "APC mini MK2",
@@ -69,6 +70,7 @@ const apc = {
             case 'latch':
                 this.latch = !this.latch;
                 this.toggleUI(msg.note);
+                return;
 
             case 'mute_all':
                 this.osc.send(slcmd.mute_all(this.loops));
@@ -142,15 +144,15 @@ const apc = {
     },
 
     toggleFaderControl: function (msg) {
-        this.button(apcmap.id(this.faderControl), 0, 0);
+        this.button(padmap.id(this.faderControl), 0, 0);
         this.button(msg.note, 1, 0);
-        this.faderControl = apcmap.fct(msg.note);
+        this.faderControl = padmap.fct(msg.note);
     },
 
     init: function () {
         this.button(112, 2, 0);
         this.button(113, 1, 0);
-        this.button(apcmap.id(this.faderControl), 1, 0);
+        this.button(padmap.id(this.faderControl), 1, 0);
         this.button(119, 1, 0);
 
         // Look for the midi In and Out
