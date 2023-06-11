@@ -1,5 +1,9 @@
 // Configuration
 module.exports = {
+    // Number of loops at startup.
+    loops_nb: 6,
+
+    // Osc config
     localhost:  'localhost',
     localport:  9952,
     remotehost: 'localhost',
@@ -10,17 +14,24 @@ module.exports = {
 
     // colors and light properties
     color: {
-        record: 6,
-        play: 25,
-        overdub: 8,
-        replace: 9,
-        mute: 10,
-        pause: 11,
-        off: 1,
+        record:   6,
+        play:    25,
+        overdub:  8,
+        replace:  9,
+        mute:    10,
+        pause:   11,
+        off:      1,
     },
     light: {
-        pulse: 9,
-        blink:14,
-        plain:6,
-    }
+        pulse:  9,
+        blink: 14,
+        plain:  6,
+    },
+
+    // UI
+    ui: {
+        blink: 2,
+        plain: 1,
+        off  : 0,
+    },
 };

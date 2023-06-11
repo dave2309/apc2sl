@@ -20,163 +20,74 @@ state
 20 = OffMuted
 */
 
-module.exports = function (msg, info) {
-    //console.log(msg, timeTag, info);
+module.exports = {
+    '/pong' : function (args) {
+        return {
+            fct: "pong",
+            val: args[2].value,
+        };
+    },
 
-    switch (msg.address) {
-        case '/pong':
-            return {
-                fct: "loops",
-                val: msg.args[2].value,
-            };
+    '/state': function (args) {
+        var output = {
+            fct: "refresh",
+            val: [
+                {
+                    note:     56 + args[0].value,
+                    velocity: config.color.off,
+                    channel:  config.light.plain,
+                },
+                {
+                    note:     48 + args[0].value,
+                    velocity: config.color.off,
+                    channel:  config.light.plain,
+                },
+                {
+                    note:     40 + args[0].value,
+                    velocity: config.color.off,
+                    channel:  config.light.plain,
+                },
+                {
+                    note:     args[0].value,
+                    velocity: config.color.off,
+                    channel:  config.light.plain,
+                },
+            ]
+        };
 
-        case '/state':
-            switch (msg.args[2].value) {
-                case 0:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-                case 1:
-                case 3:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.play,
-                                channel: config.light.pulse,
-                            },
-                        ],
-                    };
-                case 2:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.record,
-                                channel: config.light.blink,
-                            },
-                            {
-                                note: msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-                case 4:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.play,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: 48 + msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: 40 + msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-                case 5:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.play,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: 48 + msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: 40 + msg.args[0].value,
-                                velocity: config.color.overdub,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-                case 8:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.play,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: 48 + msg.args[0].value,
-                                velocity: config.color.replace,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: 40 + msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-                case 10:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.play,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: msg.args[0].value,
-                                velocity: config.color.mute,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-                case 20:
-                    return {
-                        fct: "pads",
-                        val: [
-                            {
-                                note: 56 + msg.args[0].value,
-                                velocity: config.color.off,
-                                channel: config.light.plain,
-                            },
-                            {
-                                note: msg.args[0].value,
-                                velocity: config.color.mute,
-                                channel: config.light.plain,
-                            },
-                        ],
-                    };
-            };
-    }
-
+        switch (args[2].value) {
+                //case 0: // thatś default pads state
+            case 1:
+                output['val'][0]['velocity'] = config.color.record;
+                output['val'][0]['channel']  = config.color.pulse;
+                break;
+            case 2:
+                output['val'][0]['velocity'] = config.color.record;
+                output['val'][0]['channel']  = config.color.blink;
+                break;
+            case 3:
+                output['val'][0]['velocity'] = config.color.replace;
+                output['val'][0]['channel']  = config.color.pulse;
+                break;
+            case 4:
+                output['val'][0]['velocity'] = config.color.play;
+                break;
+            case 5:
+                output['val'][0]['velocity'] = config.color.play;
+                output['val'][2]['velocity'] = config.color.overdub;
+                break;
+            case 8:
+                output['val'][0]['velocity'] = config.color.play;
+                output['val'][1]['velocity'] = config.color.replace;
+                break;
+            case 10:
+                output['val'][0]['velocity'] = config.color.play;
+                output['val'][3]['velocity'] = config.color.mute;
+                break;
+            case 20:
+                output['val'][3]['velocity'] = config.color.mute;
+                break;
+        }
+        return output;
+    },
 }

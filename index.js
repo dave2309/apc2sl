@@ -3,8 +3,12 @@ const slcmd   = require('./slcmd.js');
 const osc2apc = require('./osc2apc.js');
 const padmap  = require('./apcmap.js');
 
+//const oscmap  = require('./oscmap.js');
+
 const osc     = require('osc');
 const midi    = require('easymidi');
+
+const { spawn } = require('child_process');
 
 // Log out midi inputs and outputs eventually to adjust settings
 var midiInDevice  = midi.getInputs().filter(input => input.startsWith('APC') && input.endsWith('20:0'));
@@ -18,177 +22,160 @@ if (midiInDevice.length === 0 && midiOutDevice.length === 0) {
     process.exit();
 }
 
+//console.log('Midi In :', midiInDevice[0]);
+//console.log('Midi Out:', midiOutDevice[0]);
 
 const apc = {
     name: "APC mini MK2",
 
-    loops: 0,
+    loops_nb: config.loops_nb,
 
     latch: false,
 
     osc: new osc.UDPPort({
-        localAddress: config.localhost,
-        localPort: config.localport,
+        localAddress:  config.localhost,
+        localPort:     config.localport,
         remoteAddress: config.remoteaddress,
-        remotePort: config.remoteport,
-        metadata: true
+        remotePort:    config.remoteport,
+        metadata:      true
     }),
 
-    midiIn: new midi.Input(midiInDevice.pop()),
+    midiIn:  new midi.Input(midiInDevice.pop()),
     midiOut: new midi.Output(midiOutDevice.pop()),
 
     shift: false,
 
-    faderControl: 'wet', // can be `pan_1` id: 100,
+    fader_control: 100, // or 101 (volume or pan)
 
-    // Parse Midi Message
-    pad: function (note) {
-        // Send action to SooperLooper
-        this.osc.send(slcmd.hit(note));
+    sl_start: function () {
+        console.log('launch app.');
+        //const child = spawn('slgui');
     },
 
-    pmmon: function (msg) {
-        console.log(msg);
-        switch (padmap.is(msg.note)) {
-            case 'pad':
-                this.pad(msg.note);
-                return;
-
-            case 'vol':
-            case 'pan':
-                this.toggleFaderControl(msg);
-                return;
-
-            case 'shift':
-                this.shift = !this.shift;
-                return;
-
-            case 'ping':
-                this.osc.send(slcmd.ping());
-                return;
-
-            case 'latch':
-                this.latch = !this.latch;
-                this.toggleUI(msg.note);
-                return;
-
-            case 'mute_all':
-                this.osc.send(slcmd.mute_all(this.loops));
-        }
+    loop_control: function (params) {
+        this.osc.send(slcmd.hit(params.fct, params.lid));
     },
 
-    pmmoff: function (msg) {
-        switch (padmap.is(msg.note)) {
-            case 'pad':
-                if (!this.latch) {
-                    return;
-                }
-
-                this.pad(msg.note);
-                break;
-
-            case 'shift':
-                this.shift = !this.shift;
-        }
+    toggle_shift: function () {
+        this.shift = !this.shift;
     },
 
-    // Parse Midi Message Controller Change
-    pmmcc: function (msg) {
-        //console.log(msg);
-        this.osc.send(slcmd.set(this.faderControl, msg.controller%8, msg.value/127));
+    ping: function () {
+        this.osc.send(slcmd.ping());
     },
 
-    // Parse Osc Message
-    //pom: function (msg, timeTag, info) {
-    pom: function (msg, info) {
-        //console.log(msg, timeTag, info);
-        var result = osc2apc(msg, info);
-        switch (result.fct) {
-            case 'loops':
-                this.loops = result.val;
-                this.reset();
-                this.osc.send(slcmd.unregister_loops_state(this.loops));
-                this.osc.send(slcmd.register_loops_state(this.loops));
-                this.osc.send(slcmd.state_all(this.loops));
-                break;
+    mute_all: function () {
+        this.osc.send(slcmd.mute_all(this.loops_nb));
+    },
 
-            case 'pads':
-                this.refresh(result.val);
-        }
+    toggle_latch: function () {
+        this.latch = !this.latch;
+
+        // 2: blink 1: plain
+        this.button(padmap.id['latch'], this.latch ? 2 : 1, 0);
+    },
+
+    switch_fader_control: function (params) {
+        this.button(this.fader_control, 0, 0);
+        this.button(params.code, 1, 0);
+        this.fader_control = params.code;
     },
 
     // Refresh the pads colors/lights
     refresh: function (pads) {
-        pads.forEach(pad => { this.button(pad.note, pad.velocity, pad.channel); })
+        pads.forEach(pad => { this.button(pad.note, pad.velocity, pad.channel); });
     },
 
     // Make all reset
     // TODO
     reset: function() {
-        this.faderControl = 'wet';
+        this.fader_control = padmap.id['volume'];
+        this.button(padmap.id['volume'], 1, 0);
+        this.button(padmap.id['pan'], 0, 0);
 
-        // Reset active pads
-        for (var i = 0; i < 64; i++) {
-            if (i % 8 < this.loops) {
+        // Reset active pads undo/redo/rev/trigger rows
+        // NOTE: the others ones should be taking care off with state back
+        for (var i = 8; i <= 39; i++) {
+            if (i % 8 < this.loops_nb) {
                 this.button(i, 1, 6);
             } else {
                 this.button(i, 0, 0);
             }
         }
 
-        this.button(116, this.latch ? 2 : 1, 0);
+        this.button(padmap.id['latch'], this.latch ? 2 : 1, 0);
     },
 
-    toggleUI: function (note) {
-        this.button(note, this.latch ? 2 : 1, 0);
-    },
-
-    toggleFaderControl: function (msg) {
-        this.button(padmap.id(this.faderControl), 0, 0);
-        this.button(msg.note, 1, 0);
-        this.faderControl = padmap.fct(msg.note);
+    pong: function (loops_nb) {
+        //console.log('loops nb:', result.val);
+        if (this.loops_nb != loops_nb) {
+            this.osc.send(slcmd.unregister_loops_state(this.loops_nb));
+            this.osc.send(slcmd.register_loops_state(loops_nb));
+        }
+        this.loops_nb = loops_nb;
+        this.reset();
+        this.osc.send(slcmd.state_all(this.loops_nb));
     },
 
     init: function () {
-        this.button(112, 2, 0);
-        this.button(113, 1, 0);
-        this.button(padmap.id(this.faderControl), 1, 0);
-        this.button(119, 1, 0);
+        this.button(padmap.id['ping'], 1, 0);
+        this.button(padmap.id['reset'], 1, 0);
+        this.button(padmap.id['latch'], 1, 0);
+        this.button(padmap.id['mute_all'], 1, 0);
 
         // Look for the midi In and Out
-        this.midiIn.on('noteon', function (msg) { this.pmmon(msg); }.bind(this));
+        this.midiIn.on('noteon', function (msg) {
+            var dispatch = padmap.dispatch(msg.note);
+            this[dispatch.action](dispatch.params ?? null);
+        }.bind(this));
 
-        this.midiIn.on('noteoff', function (msg) { this.pmmoff(msg); }.bind(this));
+        this.midiIn.on('noteoff', function (msg) {
+            if (!(msg.note >= 40 && msg.note <= 63 && this.latch)) {
+                return;
+            }
 
-        this.midiIn.on('cc', function (msg) { this.pmmcc(msg); }.bind(this));
+            var dispatch = padmap.dispatch(msg.note);
+            this[dispatch.action](dispatch.params ?? null);
+        }.bind(this));
 
-        //this.osc.on('bundle', function (oscMsg, timeTag, info) { this.pom(oscMsg, timeTag, info); }.bind(this));
-        this.osc.on('osc', function (oscMsg, info) { this.pom(oscMsg, info); }.bind(this));
+        this.midiIn.on('cc', function (msg) {
+            this.osc.send(slcmd.set(padmap.fct[this.fader_control], msg.controller%8, msg.value/127));
+        }.bind(this));
+
+        this.osc.on('osc', function (oscMsg, info) {
+            var dispatch = osc2apc[oscMsg.address](oscMsg.args);
+            this[dispatch.fct](dispatch.val ?? null);
+        }.bind(this));
 
         this.osc.on('error', function (error) { console.error(error); });
 
         this.osc.on("ready", function () {
-            console.log('I am ready!');
-
-            this.button(112, 1, 0);
+            //console.log('osc ready');
             this.osc.send(slcmd.ping());
             this.osc.send(slcmd.state_all());
-
         }.bind(this));
 
         this.osc.open();
     },
 
     button: function (note, velocity, channel) {
-        this.midiOut.send('noteon', {
-            note: note,
-            velocity: velocity,
-            channel: channel,
-        });
+        this.midiOut.send('noteon', { note: note, velocity: velocity, channel: channel });
     },
 
     shutdown: function () {
-        this.osc.send(slcmd.unregister_loops_state(this.loops));
+        // Pads
+        for (var i=0; i<=63; i++) {
+            this.button(i, 0, 0);
+        }
+        // faders buttons
+        for (i=100; i<=107; i++) {
+            this.button(i, 0, 0);
+        }
+        // UI
+        for (i=112; i<=119; i++) {
+            this.button(i, 0, 0);
+        }
+        this.osc.send(slcmd.unregister_loops_state(this.loops_nb));
         this.osc.close();
         this.midiOut.close();
         this.midiIn.close();

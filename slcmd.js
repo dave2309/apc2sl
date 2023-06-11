@@ -1,5 +1,6 @@
 const config = require('./config.js');
 
+/*
 const slfct = {
     7: "record",
     6: "replace",
@@ -28,6 +29,7 @@ const slfct = {
     //: "set_sync_pos",
     //: "reset_sync_pos",
 };
+*/
 
 module.exports = {
     ping: function () {
@@ -75,15 +77,33 @@ module.exports = {
         };
     },
 
-    hit: function (id) {
-        console.log('loop: ' + id%8);
-        console.log('act : ' + slfct[Math.floor(id/8)]);
+    set: function (ctrl, id, value) {
         return {
-            address: "/sl/" + (id%8) + "/hit",
+            address: "/sl/" + id + "/set",
             args: [
                 {
                     type: 's',
-                    value: slfct[Math.floor(id/8)],
+                    value: ctrl,
+                },
+                {
+                    type: 'f',
+                    value: value,
+                },
+            ],
+        };
+    },
+
+    hit: function (fct, id) {
+        //console.log('loop: ' + id%8);
+        //console.log('act : ' + slfct[Math.floor(id/8)]);
+        return {
+            //address: "/sl/" + (id%8) + "/hit",
+            address: "/sl/" + id + "/hit",
+            args: [
+                {
+                    type: 's',
+                    //value: slfct[Math.floor(id/8)],
+                    value: fct,
                 },
             ],
         };
