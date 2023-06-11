@@ -44,7 +44,7 @@ const non_pads = {
     114: "sl_start",
     115: null,
     116: "toggle_latch",
-    117: null,
+    117: "toggle_record",
     118: "rotate_sync_source",
     119: "mute_all",
 
@@ -58,6 +58,7 @@ module.exports = {
         'ping':               112,
         'reset':              113,
         'latch':              116,
+        'toggle_record':      117,
         'rotate_sync_source': 118,
         'mute_all':           119,
     },

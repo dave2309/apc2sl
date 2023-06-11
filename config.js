@@ -34,4 +34,7 @@ module.exports = {
         plain: 1,
         off  : 0,
     },
+
+    // records folder
+    rec_folder: '/home/me/Music',
 };

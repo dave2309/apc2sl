@@ -6,7 +6,7 @@ const padmap  = require('./apcmap.js');
 const osc     = require('osc');
 const midi    = require('easymidi');
 
-//const { spawn } = require('child_process');
+const { spawn } = require('child_process');
 
 // Log out midi inputs and outputs eventually to adjust settings
 var midiInDevice  = midi.getInputs().filter(input => input.startsWith('APC') && input.endsWith(':0'));
@@ -29,6 +29,8 @@ const apc = {
     loops_nb: config.loops_nb,
 
     latch: false,
+
+    rec_client: undefined,
 
     osc: new osc.UDPPort({
         localAddress:  config.localhost,
@@ -125,10 +127,43 @@ const apc = {
         this.osc.send(slcmd.setg("sync_source", this.sync_source));
     },
 
+    toggle_record: function () {
+        if (typeof this.rec_client == "object") {
+            this.rec_client.kill();
+            this.rec_client = undefined;
+            this.button(padmap.id['toggle_record'], 1, 0);
+            return;
+        }
+
+        // Start a new recording
+        this.rec_client = spawn(
+            'jack_capture',
+            [
+                '--channels',
+                '2',
+                '--port',
+                'system:playback*',
+                '--filename',
+                config.rec_folder + '/record-' + Date.now() + '.wav',
+            ]
+        );
+
+        this.button(padmap.id['toggle_record'], 2, 0);
+        /*
+        this.rec_client.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+        this.rec_client.on('error', (err) => {
+            console.error('Failed to start subprocess.');
+        });
+        */
+    },
+
     init: function () {
         this.button(padmap.id['ping'], 1, 0);
         this.button(padmap.id['reset'], 1, 0);
         this.button(padmap.id['latch'], 1, 0);
+        this.button(padmap.id['toggle_record'], 1, 0);
         this.button(padmap.id['rotate_sync_source'], 1, 0);
         this.button(padmap.id['mute_all'], 1, 0);
 
