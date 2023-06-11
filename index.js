@@ -6,11 +6,11 @@ const padmap  = require('./apcmap.js');
 const osc     = require('osc');
 const midi    = require('easymidi');
 
-const { spawn } = require('child_process');
+//const { spawn } = require('child_process');
 
 // Log out midi inputs and outputs eventually to adjust settings
-var midiInDevice  = midi.getInputs().filter(input => input.startsWith('APC') && input.endsWith('20:0'));
-var midiOutDevice = midi.getOutputs().filter(input => input.startsWith('APC') && input.endsWith('20:0'));
+var midiInDevice  = midi.getInputs().filter(input => input.startsWith('APC') && input.endsWith(':0'));
+var midiOutDevice = midi.getOutputs().filter(input => input.startsWith('APC') && input.endsWith(':0'));
 
 // If no device found just get out
 if (midiInDevice.length === 0 && midiOutDevice.length === 0) {
