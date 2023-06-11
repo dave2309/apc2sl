@@ -30,3 +30,7 @@ numbers of loops are 6 by default, and guess with /ping osc to SooperLooper
 clipstop: call ping
 
 solo: call a reset (refresh pads)
+
+note: is cycling sync_source from 0 to nb of loops
+
+drum: is toggling on/off a recording (default location is /home/me/Music)
