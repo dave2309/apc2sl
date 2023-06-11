@@ -14,7 +14,7 @@ module.exports = {
 
     // colors and light properties
     color: {
-        record:   6,
+        record:   5,
         play:    25,
         overdub:  8,
         replace:  9,

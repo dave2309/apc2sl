@@ -59,15 +59,15 @@ module.exports = {
                 //case 0: // thatś default pads state
             case 1:
                 output['val'][0]['velocity'] = config.color.record;
-                output['val'][0]['channel']  = config.color.pulse;
+                output['val'][0]['channel']  = config.light.pulse;
                 break;
             case 2:
                 output['val'][0]['velocity'] = config.color.record;
-                output['val'][0]['channel']  = config.color.blink;
+                output['val'][0]['channel']  = config.light.blink;
                 break;
             case 3:
                 output['val'][0]['velocity'] = config.color.replace;
-                output['val'][0]['channel']  = config.color.pulse;
+                output['val'][0]['channel']  = config.light.pulse;
                 break;
             case 4:
                 output['val'][0]['velocity'] = config.color.play;

@@ -3,8 +3,6 @@ const slcmd   = require('./slcmd.js');
 const osc2apc = require('./osc2apc.js');
 const padmap  = require('./apcmap.js');
 
-//const oscmap  = require('./oscmap.js');
-
 const osc     = require('osc');
 const midi    = require('easymidi');
 
@@ -159,6 +157,7 @@ const apc = {
     },
 
     button: function (note, velocity, channel) {
+        //console.log(note, velocity,channel);
         this.midiOut.send('noteon', { note: note, velocity: velocity, channel: channel });
     },
 
