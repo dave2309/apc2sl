@@ -136,17 +136,7 @@ const apc = {
         }
 
         // Start a new recording
-        this.rec_client = spawn(
-            'jack_capture',
-            [
-                '--channels',
-                '2',
-                '--port',
-                'system:playback*',
-                '--filename',
-                config.rec_folder + '/record-' + Date.now() + '.wav',
-            ]
-        );
+        this.rec_client = spawn('jack_capture', config.rec_params);
 
         this.button(padmap.id['toggle_record'], 2, 0);
         /*

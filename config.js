@@ -36,5 +36,15 @@ module.exports = {
     },
 
     // records folder
-    rec_folder: '/home/me/Music',
+    rec_params: [
+        '--filename-prefix',
+        'apc2sl_record_',
+        '--leading-zeros',
+        '3',
+        '--absolutely-silent',
+        '--port',
+        'system:capture_1',
+        '--port',
+        'sooperlooper:common_out_*',
+    ],
 };
