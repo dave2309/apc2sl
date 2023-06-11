@@ -45,19 +45,21 @@ const non_pads = {
     115: null,
     116: "toggle_latch",
     117: null,
-    118: null,
+    118: "rotate_sync_source",
     119: "mute_all",
+
     122: "toggle_shift",
 };
 
 module.exports = {
     id: {
-        'volume':   100,
-        'pan':      101,
-        'ping':     112,
-        'reset':    113,
-        'latch':    116,
-        'mute_all': 119,
+        'volume':             100,
+        'pan':                101,
+        'ping':               112,
+        'reset':              113,
+        'latch':              116,
+        'rotate_sync_source': 118,
+        'mute_all':           119,
     },
 
     fct: {

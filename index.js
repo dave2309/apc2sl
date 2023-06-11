@@ -43,6 +43,8 @@ const apc = {
 
     shift: false,
 
+    sync_source: 1,
+
     fader_control: 100, // or 101 (volume or pan)
 
     sl_start: function () {
@@ -115,10 +117,19 @@ const apc = {
         this.osc.send(slcmd.state_all(this.loops_nb));
     },
 
+    rotate_sync_source: function () {
+        this.sync_source++;
+        if (this.sync_source > this.loops_nb) {
+            this.sync_source = 0;
+        }
+        this.osc.send(slcmd.setg("sync_source", this.sync_source));
+    },
+
     init: function () {
         this.button(padmap.id['ping'], 1, 0);
         this.button(padmap.id['reset'], 1, 0);
         this.button(padmap.id['latch'], 1, 0);
+        this.button(padmap.id['rotate_sync_source'], 1, 0);
         this.button(padmap.id['mute_all'], 1, 0);
 
         // Look for the midi In and Out

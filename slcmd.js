@@ -93,6 +93,22 @@ module.exports = {
         };
     },
 
+    setg: function (ctrl, value) {
+        return {
+            address: "/set",
+            args: [
+                {
+                    type: 's',
+                    value: ctrl,
+                },
+                {
+                    type: 'f',
+                    value: value,
+                },
+            ],
+        };
+    },
+
     hit: function (fct, id) {
         //console.log('loop: ' + id%8);
         //console.log('act : ' + slfct[Math.floor(id/8)]);
