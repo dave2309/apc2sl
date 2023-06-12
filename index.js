@@ -222,5 +222,10 @@ process.on('SIGINT', function () {
     apc.shutdown();
     process.exit();
 })
+process.on('SIGTERM', function () {
+    console.log('SIGTERM');
+    apc.shutdown();
+    process.exit();
+})
 
 apc.init();
